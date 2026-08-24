@@ -1,7 +1,29 @@
 :root {
-    --ecoinv-primary: #10d130;
+    --ecoinv-primary: #25a53a;
     --ecoinv-dark: #212529;
     --ecoinv-bg: #f8f9fa;
+    /* Sobrescribir colores de Bootstrap */
+    --bs-primary: #25a53a;
+    --bs-primary-rgb: 16, 209, 48;
+}
+
+/* Opcional: Asegurar que los componentes usen el color verde */
+.btn-primary {
+    background-color: #25a53a !important;
+    border-color: #25a53a !important;
+}
+
+.btn-primary:hover {
+    background-color: #25a53a !important;
+    border-color: #25a53a !important;
+}
+
+.text-primary {
+    color: #25a53a !important;
+}
+
+.bg-primary {
+    background-color: #25a53a !important;
 }
 
 body {

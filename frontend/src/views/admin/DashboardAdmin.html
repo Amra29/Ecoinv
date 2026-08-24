@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ecoinv - Control Distribuidora</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="../../../public/assets/css/styles.css" rel="stylesheet">
+</head>
+<body>
+    <div id="navbar-container"></div>
+
+    <div class="container my-4">
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+            <h3 class="fw-bold mb-0">Panel Global de Control (Distribuidora)</h3>
+            <div class="d-flex gap-2">
+                <a href="GestionUsuarios.html" class="btn btn-outline-primary">Clientes y Administradores</a>
+                <a href="GeneradorQR.html" class="btn btn-success">+ Generar Lote de QR</a>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <!-- Tabla de Clientes registrados -->
+            <div class="col-md-6">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-header bg-white py-3">
+                        <h5 class="mb-0 fw-bold">Empresas / Clientes</h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <ul class="list-group list-group-flush" id="lista-empresas">
+                            <li class="list-group-item text-center py-3">Cargando empresas...</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabla de Incidencias Globales -->
+            <div class="col-md-6">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-header bg-danger text-white py-3">
+                        <h5 class="mb-0 fw-bold">Alertas e Incidencias Recientes</h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <ul class="list-group list-group-flush" id="lista-incidencias">
+                            <li class="list-group-item text-center py-3">Cargando alertas...</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Inventario / Bodega por Cliente -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
+                        <h5 class="mb-0 fw-bold">Inventario / Bodega por Cliente</h5>
+                        <select id="select-filtro-empresa" class="form-select form-select-sm" style="max-width: 300px;">
+                            <option value="">Todas las empresas</option>
+                        </select>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="row g-0 border-bottom p-3 text-center text-md-start">
+                            <div class="col-md-4">
+                                <span class="text-muted small">Tóners en Almacén</span>
+                                <h4 class="fw-bold text-primary mb-0" id="inv-stat-almacen">0</h4>
+                            </div>
+                            <div class="col-md-4">
+                                <span class="text-muted small">Tóners en Uso</span>
+                                <h4 class="fw-bold text-success mb-0" id="inv-stat-uso">0</h4>
+                            </div>
+                            <div class="col-md-4">
+                                <span class="text-muted small">Defectuosos</span>
+                                <h4 class="fw-bold text-danger mb-0" id="inv-stat-fallas">0</h4>
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>ID QR</th>
+                                        <th>Empresa</th>
+                                        <th>Modelo</th>
+                                        <th>Estado</th>
+                                        <th>Ingreso</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tabla-inventario-admin">
+                                    <tr><td colspan="5" class="text-center py-4">Cargando inventario...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../../services/api.js"></script>
+    <script src="../../components/EcoinvNavbar.js"></script>
+    <script>
+        renderNavbar('admin');
+
+        let todosLosToners = [];
+
+        async function cargarPanelAdmin() {
+            try {
+                const [empresas, incidencias, toners] = await Promise.all([
+                    api.getEmpresas(),
+                    api.getIncidencias(),
+                    api.getToners()
+                ]);
+                todosLosToners = toners;
+
+                const listaEmpresas = document.getElementById("lista-empresas");
+                listaEmpresas.innerHTML = "";
+                empresas.forEach(e => {
+                    listaEmpresas.innerHTML += `
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>${e.nombre}</strong><br>
+                                <small class="text-muted">RUC/NIT: ${e.ruc_nit}</small>
+                            </div>
+                            <span class="badge bg-primary rounded-pill">Cliente Activo</span>
+                        </li>
+                    `;
+                });
+
+                const listaIncidencias = document.getElementById("lista-incidencias");
+                listaIncidencias.innerHTML = "";
+                if (incidencias.length === 0) {
+                    listaIncidencias.innerHTML = `<li class="list-group-item text-center text-muted py-3">No hay incidencias reportadas.</li>`;
+                } else {
+                    incidencias.forEach(i => {
+                        listaIncidencias.innerHTML += `
+                            <li class="list-group-item">
+                                <div class="d-flex justify-content-between">
+                                    <strong class="text-danger">${i.tipo_falla}</strong>
+                                    <small class="text-muted">${new Date(i.fecha_reporte).toLocaleDateString()}</small>
+                                </div>
+                                <p class="mb-0 small text-dark">${i.descripcion || 'Sin descripción detallada'}</p>
+                            </li>
+                        `;
+                    });
+                }
+
+                // Poblar el filtro de empresas para el inventario
+                const selectFiltro = document.getElementById("select-filtro-empresa");
+                selectFiltro.innerHTML = '<option value="">Todas las empresas</option>';
+                empresas.forEach(e => {
+                    selectFiltro.innerHTML += `<option value="${e.id}">${e.nombre}</option>`;
+                });
+                selectFiltro.addEventListener("change", renderInventario);
+
+                renderInventario();
+
+            } catch (err) {
+                alert("Error de autenticación o servidor: " + err.message);
+            }
+        }
+
+        function renderInventario() {
+            const filtroId = document.getElementById("select-filtro-empresa").value;
+            const lista = filtroId
+                ? todosLosToners.filter(t => String(t.empresa_id) === String(filtroId))
+                : todosLosToners;
+
+            const tbody = document.getElementById("tabla-inventario-admin");
+            tbody.innerHTML = "";
+
+            let almacen = 0, uso = 0, fallas = 0;
+
+            if (lista.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-4">No hay tóners registrados para esta selección.</td></tr>`;
+            } else {
+                lista.forEach(t => {
+                    if (t.estado === "EN_ALMACEN") almacen++;
+                    if (t.estado === "EN_USO") uso++;
+                    if (t.estado === "DEFECTUOSO") fallas++;
+
+                    const badgeColor = {
+                        'EN_ALMACEN': 'bg-secondary',
+                        'EN_USO': 'bg-success',
+                        'DEFECTUOSO': 'bg-danger'
+                    }[t.estado] || 'bg-dark';
+
+                    tbody.innerHTML += `
+                        <tr>
+                            <td><code>${t.uuid_qr.substring(0, 8)}...</code></td>
+                            <td>${t.empresa_nombre || '—'}</td>
+                            <td>${t.modelo_codigo || ('ID ' + t.modelo_id)}</td>
+                            <td><span class="badge ${badgeColor} badge-status">${t.estado}</span></td>
+                            <td>${t.fecha_ingreso ? new Date(t.fecha_ingreso).toLocaleDateString() : 'N/A'}</td>
+                        </tr>
+                    `;
+                });
+            }
+
+            document.getElementById("inv-stat-almacen").innerText = almacen;
+            document.getElementById("inv-stat-uso").innerText = uso;
+            document.getElementById("inv-stat-fallas").innerText = fallas;
+        }
+
+        cargarPanelAdmin();
+    </script>
+</body>
+</html>

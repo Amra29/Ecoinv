@@ -1,0 +1,18 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+
+# Variables de entorno
+.env
+
+# Exportaciones QR temporales
+backend/qr_exports/*.png
+backend/qr_exports/*.pdf
+!backend/qr_exports/.gitkeep
+
+# Node / Frontend
+node_modules/
+.DS_Store

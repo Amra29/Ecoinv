@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ecoinv - Panel Cliente</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="../../../public/assets/css/styles.css" rel="stylesheet">
+</head>
+<body>
+    <div id="navbar-container"></div>
+
+    <div class="container my-4">
+        <h3 class="fw-bold mb-4">Estado de Inventario de Tóners</h3>
+
+        <!-- Métricas Rápidas -->
+        <div class="row g-3 mb-4">
+            <div class="col-md-4">
+                <div class="card card-stat bg-white p-3 border-start border-primary border-4">
+                    <span class="text-muted small">Tóners en Almacén</span>
+                    <h2 class="fw-bold text-primary mb-0" id="stat-almacen">0</h2>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card card-stat bg-white p-3 border-start border-success border-4">
+                    <span class="text-muted small">Tóners en Uso</span>
+                    <h2 class="fw-bold text-success mb-0" id="stat-uso">0</h2>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card card-stat bg-white p-3 border-start border-danger border-4">
+                    <span class="text-muted small">Reportados / Defectuosos</span>
+                    <h2 class="fw-bold text-danger mb-0" id="stat-fallas">0</h2>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabla de Tóners -->
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 fw-bold">Listado de Unidades</h5>
+                <a href="EscaneoToner.html" class="btn btn-primary btn-sm">+ Escanear QR</a>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>ID QR</th>
+                                <th>Modelo</th>
+                                <th>Estado</th>
+                                <th>Fecha Apertura</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-toners">
+                            <tr><td colspan="4" class="text-center py-4">Cargando datos...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../../services/api.js"></script>
+    <script src="../../components/EcoinvNavbar.js"></script>
+    <script>
+        renderNavbar('cliente');
+
+        async function cargarDashboard() {
+            try {
+                const toners = await api.getToners();
+                
+                let almacen = 0, uso = 0, fallas = 0;
+                const tbody = document.getElementById("tabla-toners");
+                tbody.innerHTML = "";
+
+                if (toners.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="4" class="text-center text-muted">No hay tóners asignados.</td></tr>`;
+                    return;
+                }
+
+                toners.forEach(t => {
+                    if (t.estado === "EN_ALMACEN") almacen++;
+                    if (t.estado === "EN_USO") uso++;
+                    if (t.estado === "DEFECTUOSO") fallas++;
+
+                    const badgeColor = {
+                        'EN_ALMACEN': 'bg-secondary',
+                        'EN_USO': 'bg-success',
+                        'DEFECTUOSO': 'bg-danger'
+                    }[t.estado] || 'bg-dark';
+
+                    tbody.innerHTML += `
+                        <tr>
+                            <td><code>${t.uuid_qr.substring(0, 8)}...</code></td>
+                            <td>${t.modelo_codigo || ('ID Modelo: ' + t.modelo_id)}</td>
+                            <td><span class="badge ${badgeColor} badge-status">${t.estado}</span></td>
+                            <td>${t.fecha_apertura ? new Date(t.fecha_apertura).toLocaleString() : 'N/A'}</td>
+                        </tr>
+                    `;
+                });
+
+                document.getElementById("stat-almacen").innerText = almacen;
+                document.getElementById("stat-uso").innerText = uso;
+                document.getElementById("stat-fallas").innerText = fallas;
+
+            } catch (err) {
+                alert("Error al cargar datos: " + err.message);
+            }
+        }
+
+        cargarDashboard();
+    </script>
+</body>
+</html>

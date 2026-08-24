@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ecoinv - Escanear QR</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="../../../public/assets/css/styles.css" rel="stylesheet">
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+</head>
+<body>
+    <div id="navbar-container"></div>
+
+    <div class="container my-4 text-center">
+        <h3 class="fw-bold mb-3">Escanear Código QR de Tóner</h3>
+        <p class="text-muted mb-4">Apunta la cámara de tu dispositivo al código pegado en la caja</p>
+
+        <!-- Visor del Escáner -->
+        <div id="reader" class="mb-4"></div>
+
+        <!-- Panel de Confirmación / Formulario -->
+        <div id="panel-acciones" class="card shadow-sm p-4 mx-auto d-none" style="max-width: 500px;">
+            <h4 class="fw-bold text-success mb-3">¡Tóner Detectado!</h4>
+            <p class="text-muted">ID Unico: <strong id="uuid-display"></strong></p>
+
+            <div id="bloque-botones" class="d-grid gap-2">
+                <button class="btn btn-success btn-lg" onclick="ejecutarAccion('ABRIR')">
+                     Abrir / Registrar Uso
+                </button>
+                <button class="btn btn-outline-danger" onclick="mostrarFormFalla()">
+                     Reportar Problema con este Tóner
+                </button>
+            </div>
+
+            <!-- Formulario de Falla Oculto -->
+            <div id="form-falla" class="mt-3 text-start d-none">
+                <hr>
+                <h6 class="fw-bold text-danger">Detalle del Defecto</h6>
+                <div class="mb-3">
+                    <label class="form-label">Tipo de problema</label>
+                    <select id="tipo-falla" class="form-select">
+                        <option value="Mancha Impresiones">Mancha impresiones</option>
+                        <option value="Empaque Roto/Dañado">Empaque roto o con fuga</option>
+                        <option value="No Reconocido por Impresora">Impresora no lo reconoce</option>
+                        <option value="Otro">Otro defecto</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Notas adicionales</label>
+                    <textarea id="desc-falla" class="form-control" rows="2" placeholder="Describe brevemente la falla..."></textarea>
+                </div>
+                <button class="btn btn-danger w-100" onclick="ejecutarAccion('REPORTAR_FALLA')">Confirmar Reporte de Falla</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../../services/api.js"></script>
+    <script src="../../components/EcoinvNavbar.js"></script>
+    <script>
+        renderNavbar('escaneo');
+        let currentUUID = "";
+        let html5QrcodeScanner;
+
+        function onScanSuccess(decodedText) {
+            // Extrae el UUID si viene en formato URL (https://ecoinv.com/scan/UUID)
+            currentUUID = decodedText.includes("/") ? decodedText.split('/').pop() : decodedText;
+
+            document.getElementById("uuid-display").innerText = currentUUID;
+            document.getElementById("reader").classList.add("d-none");
+            document.getElementById("panel-acciones").classList.remove("d-none");
+
+            if (html5QrcodeScanner) {
+                html5QrcodeScanner.clear();
+            }
+        }
+
+        html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
+        html5QrcodeScanner.render(onScanSuccess);
+
+        function mostrarFormFalla() {
+            document.getElementById("bloque-botones").classList.add("d-none");
+            document.getElementById("form-falla").classList.remove("d-none");
+        }
+
+        async function ejecutarAccion(accion) {
+            try {
+                const payload = {
+                    uuid_qr: currentUUID,
+                    accion: accion,
+                    tipo_falla: accion === 'REPORTAR_FALLA' ? document.getElementById("tipo-falla").value : null,
+                    descripcion_falla: accion === 'REPORTAR_FALLA' ? document.getElementById("desc-falla").value : null
+                };
+
+                const res = await api.procesarEscaneo(payload);
+                alert(res.mensaje);
+                window.location.href = "DashboardCliente.html";
+
+            } catch (err) {
+                alert("Error: " + err.message);
+                window.location.reload();
+            }
+        }
+    </script>
+</body>
+</html>

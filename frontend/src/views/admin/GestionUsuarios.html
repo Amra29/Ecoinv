@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ecoinv - Gestión de Clientes y Administradores</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="../../../public/assets/css/styles.css" rel="stylesheet">
+</head>
+<body>
+    <div id="navbar-container"></div>
+
+    <div class="container my-4">
+        <h3 class="fw-bold mb-4">Gestión de Clientes y Administradores</h3>
+
+        <ul class="nav nav-tabs mb-4" id="tabsGestion">
+            <li class="nav-item">
+                <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-empresas" type="button">Empresas Clientes</button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-credenciales" type="button">Credenciales de Clientes</button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-admins" type="button">Administradores Ecoinv</button>
+            </li>
+        </ul>
+
+        <div class="tab-content">
+
+            <!-- ================= TAB EMPRESAS ================= -->
+            <div class="tab-pane fade show active" id="tab-empresas">
+                <div class="row g-4">
+                    <div class="col-md-5">
+                        <div class="card shadow-sm border-0">
+                            <div class="card-header bg-white py-3"><h5 class="mb-0 fw-bold">Nueva Empresa Cliente</h5></div>
+                            <div class="card-body">
+                                <form id="form-nueva-empresa">
+                                    <div class="mb-3">
+                                        <label class="form-label">Nombre de la empresa</label>
+                                        <input type="text" id="empresa-nombre" class="form-control" required placeholder="Ej. Corporación Alfa S.A.">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">RUC / NIT</label>
+                                        <input type="text" id="empresa-ruc" class="form-control" required placeholder="Ej. 1790001112001">
+                                    </div>
+                                    <button type="submit" class="btn btn-primary w-100">Crear Empresa</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-7">
+                        <div class="card shadow-sm border-0">
+                            <div class="card-header bg-white py-3"><h5 class="mb-0 fw-bold">Empresas Registradas</h5></div>
+                            <div class="card-body p-0">
+                                <ul class="list-group list-group-flush" id="lista-empresas-gestion">
+                                    <li class="list-group-item text-center py-3">Cargando...</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================= TAB CREDENCIALES CLIENTE ================= -->
+            <div class="tab-pane fade" id="tab-credenciales">
+                <div class="row g-4">
+                    <div class="col-md-5">
+                        <div class="card shadow-sm border-0">
+                            <div class="card-header bg-white py-3"><h5 class="mb-0 fw-bold">Nueva Credencial de Cliente</h5></div>
+                            <div class="card-body">
+                                <p class="text-muted small">Crea el usuario y contraseña para que un cliente pueda entrar a su panel y ver su propio inventario.</p>
+                                <form id="form-nuevo-cliente">
+                                    <div class="mb-3">
+                                        <label class="form-label">Empresa</label>
+                                        <select id="cliente-empresa" class="form-select" required>
+                                            <option value="">Cargando empresas...</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Nombre del contacto</label>
+                                        <input type="text" id="cliente-nombre" class="form-control" required placeholder="Ej. Juan Pérez">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Correo</label>
+                                        <input type="email" id="cliente-email" class="form-control" required placeholder="cliente@empresa.com">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Contraseña</label>
+                                        <input type="text" id="cliente-password" class="form-control" required minlength="6" placeholder="Mínimo 6 caracteres">
+                                        <div class="form-text">Compártela con el cliente por un canal seguro.</div>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary w-100">Crear Credencial de Cliente</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-7">
+                        <div class="card shadow-sm border-0">
+                            <div class="card-header bg-white py-3"><h5 class="mb-0 fw-bold">Usuarios Cliente</h5></div>
+                            <div class="card-body p-0">
+                                <ul class="list-group list-group-flush" id="lista-usuarios-cliente">
+                                    <li class="list-group-item text-center py-3">Cargando...</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================= TAB SUPERADMINS ================= -->
+            <div class="tab-pane fade" id="tab-admins">
+                <div class="row g-4">
+                    <div class="col-md-5">
+                        <div class="card shadow-sm border-0">
+                            <div class="card-header bg-white py-3"><h5 class="mb-0 fw-bold">Invitar Administrador Ecoinv</h5></div>
+                            <div class="card-body">
+                                <p class="text-muted small">Los administradores tienen acceso total: ven todos los clientes, su inventario y pueden generar QR.</p>
+                                <form id="form-nuevo-admin">
+                                    <div class="mb-3">
+                                        <label class="form-label">Nombre</label>
+                                        <input type="text" id="admin-nombre" class="form-control" required placeholder="Ej. María Torres">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Correo</label>
+                                        <input type="email" id="admin-email" class="form-control" required placeholder="maria@ecoinv.com">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Contraseña</label>
+                                        <input type="text" id="admin-password" class="form-control" required minlength="6" placeholder="Mínimo 6 caracteres">
+                                    </div>
+                                    <button type="submit" class="btn btn-success w-100">Crear Administrador</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-7">
+                        <div class="card shadow-sm border-0">
+                            <div class="card-header bg-white py-3"><h5 class="mb-0 fw-bold">Administradores Actuales</h5></div>
+                            <div class="card-body p-0">
+                                <ul class="list-group list-group-flush" id="lista-admins">
+                                    <li class="list-group-item text-center py-3">Cargando...</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../../services/api.js"></script>
+    <script src="../../components/EcoinvNavbar.js"></script>
+    <script>
+        renderNavbar('gestion');
+        let empresasCache = [];
+        let usuariosCache = [];
+
+        // ---------------- Empresas ----------------
+
+        async function cargarEmpresas() {
+            empresasCache = await api.getEmpresas();
+
+            const lista = document.getElementById("lista-empresas-gestion");
+            lista.innerHTML = "";
+            if (empresasCache.length === 0) {
+                lista.innerHTML = `<li class="list-group-item text-center text-muted py-3">No hay empresas registradas.</li>`;
+            } else {
+                empresasCache.forEach(emp => {
+                    lista.innerHTML += `
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>${emp.nombre}</strong><br>
+                                <small class="text-muted">RUC/NIT: ${emp.ruc_nit}</small>
+                            </div>
+                            <button class="btn btn-outline-danger btn-sm" onclick="eliminarEmpresa(${emp.id}, '${emp.nombre.replace(/'/g, "\\'")}')">Eliminar</button>
+                        </li>
+                    `;
+                });
+            }
+
+            const selectCliente = document.getElementById("cliente-empresa");
+            selectCliente.innerHTML = '<option value="">-- Seleccione Empresa --</option>';
+            empresasCache.forEach(emp => {
+                selectCliente.innerHTML += `<option value="${emp.id}">${emp.nombre}</option>`;
+            });
+        }
+
+        document.getElementById("form-nueva-empresa").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const nombre = document.getElementById("empresa-nombre").value.trim();
+            const ruc_nit = document.getElementById("empresa-ruc").value.trim();
+
+            try {
+                await api.crearEmpresa({ nombre, ruc_nit });
+                e.target.reset();
+                await cargarEmpresas();
+                alert("Empresa creada correctamente. Ahora puedes crear su credencial de acceso en la pestaña 'Credenciales de Clientes'.");
+            } catch (err) {
+                alert("Error al crear la empresa: " + err.message);
+            }
+        });
+
+        async function eliminarEmpresa(id, nombre) {
+            const confirmado = confirm(
+                `¿Seguro que deseas eliminar la empresa "${nombre}"?\n\n` +
+                `Esto eliminará también su inventario de tóners y las credenciales de sus usuarios cliente. Esta acción no se puede deshacer.`
+            );
+            if (!confirmado) return;
+
+            try {
+                await api.eliminarEmpresa(id);
+                await cargarEmpresas();
+                await cargarUsuarios();
+            } catch (err) {
+                alert("Error al eliminar la empresa: " + err.message);
+            }
+        }
+
+        // ---------------- Usuarios (clientes y admins) ----------------
+
+        async function cargarUsuarios() {
+            usuariosCache = await api.getUsuarios();
+
+            const clientes = usuariosCache.filter(u => u.rol === "CLIENTE");
+            const admins = usuariosCache.filter(u => u.rol === "SUPERADMIN");
+
+            const listaClientes = document.getElementById("lista-usuarios-cliente");
+            listaClientes.innerHTML = "";
+            if (clientes.length === 0) {
+                listaClientes.innerHTML = `<li class="list-group-item text-center text-muted py-3">Aún no hay credenciales de clientes.</li>`;
+            } else {
+                clientes.forEach(u => {
+                    listaClientes.innerHTML += `
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>${u.nombre}</strong><br>
+                                <small class="text-muted">${u.email} &middot; ${u.empresa_nombre || 'Sin empresa'}</small>
+                            </div>
+                            <button class="btn btn-outline-danger btn-sm" onclick="eliminarUsuario(${u.id}, '${u.nombre.replace(/'/g, "\\'")}')">Eliminar</button>
+                        </li>
+                    `;
+                });
+            }
+
+            const listaAdmins = document.getElementById("lista-admins");
+            listaAdmins.innerHTML = "";
+            admins.forEach(u => {
+                listaAdmins.innerHTML += `
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>${u.nombre}</strong><br>
+                            <small class="text-muted">${u.email}</small>
+                        </div>
+                        <button class="btn btn-outline-danger btn-sm" onclick="eliminarUsuario(${u.id}, '${u.nombre.replace(/'/g, "\\'")}')">Eliminar</button>
+                    </li>
+                `;
+            });
+        }
+
+        document.getElementById("form-nuevo-cliente").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const payload = {
+                empresa_id: parseInt(document.getElementById("cliente-empresa").value, 10),
+                nombre: document.getElementById("cliente-nombre").value.trim(),
+                email: document.getElementById("cliente-email").value.trim(),
+                password: document.getElementById("cliente-password").value
+            };
+
+            if (!payload.empresa_id) {
+                alert("Selecciona la empresa del cliente.");
+                return;
+            }
+
+            try {
+                await api.crearUsuarioCliente(payload);
+                e.target.reset();
+                await cargarUsuarios();
+                alert(`Credencial creada. El cliente ya puede entrar con:\n\nCorreo: ${payload.email}\nContraseña: (la que ingresaste)`);
+            } catch (err) {
+                alert("Error al crear la credencial: " + err.message);
+            }
+        });
+
+        document.getElementById("form-nuevo-admin").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const payload = {
+                nombre: document.getElementById("admin-nombre").value.trim(),
+                email: document.getElementById("admin-email").value.trim(),
+                password: document.getElementById("admin-password").value
+            };
+
+            const confirmado = confirm(
+                `¿Confirmas dar acceso total de SuperAdmin a "${payload.nombre}" (${payload.email})?\n\n` +
+                `Podrá ver y administrar todos los clientes, su inventario y generar lotes de QR.`
+            );
+            if (!confirmado) return;
+
+            try {
+                await api.crearSuperAdmin(payload);
+                e.target.reset();
+                await cargarUsuarios();
+                alert(`Administrador creado. Ya puede iniciar sesión con:\n\nCorreo: ${payload.email}\nContraseña: (la que ingresaste)`);
+            } catch (err) {
+                alert("Error al crear el administrador: " + err.message);
+            }
+        });
+
+        async function eliminarUsuario(id, nombre) {
+            const confirmado = confirm(`¿Seguro que deseas eliminar al usuario "${nombre}"? Perderá acceso al sistema de inmediato.`);
+            if (!confirmado) return;
+
+            try {
+                await api.eliminarUsuario(id);
+                await cargarUsuarios();
+            } catch (err) {
+                alert("Error al eliminar el usuario: " + err.message);
+            }
+        }
+
+        // ---------------- Init ----------------
+
+        (async function init() {
+            try {
+                await cargarEmpresas();
+                await cargarUsuarios();
+            } catch (err) {
+                alert("Error al cargar la gestión de usuarios: " + err.message);
+            }
+        })();
+    </script>
+</body>
+</html>

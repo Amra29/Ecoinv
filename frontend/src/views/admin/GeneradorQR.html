@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ecoinv - Generar Lote QR</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="../../../public/assets/css/styles.css" rel="stylesheet">
+</head>
+<body>
+    <div id="navbar-container"></div>
+
+    <div class="container my-4" style="max-width: 600px;">
+        <div class="card shadow-sm p-4 border-0">
+            <h4 class="fw-bold text-primary mb-3">Generar e Imprimir Etiquetas QR</h4>
+            <p class="text-muted small mb-4">Crea un nuevo lote de tóners para un cliente específico. Los códigos QR se generan al instante y se abren en una pestaña lista para imprimir (no se guarda ningún archivo en el servidor).</p>
+
+            <form id="form-generar-qr">
+                <div class="mb-3">
+                    <label class="form-label">Seleccionar Empresa Cliente</label>
+                    <select id="select-empresa" class="form-select" required>
+                        <option value="">Cargando empresas...</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Modelo de Tóner</label>
+                    <select id="select-modelo" class="form-select" required>
+                        <option value="">Cargando modelos...</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Cantidad de Unidades</label>
+                    <input type="number" id="cantidad" class="form-control" min="1" max="200" value="10" required>
+                </div>
+                <button type="submit" class="btn btn-success w-100 py-2">Generar e Imprimir Plancha</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
+    <script src="../../services/api.js"></script>
+    <script src="../../components/EcoinvNavbar.js"></script>
+    <script>
+        renderNavbar('admin');
+
+        async function initForm() {
+            try {
+                const [empresas, modelos] = await Promise.all([
+                    api.getEmpresas(),
+                    api.getModelos()
+                ]);
+
+                const selectEmpresa = document.getElementById("select-empresa");
+                selectEmpresa.innerHTML = '<option value="">-- Seleccione Cliente --</option>';
+                empresas.forEach(e => {
+                    selectEmpresa.innerHTML += `<option value="${e.id}">${e.nombre} (${e.ruc_nit})</option>`;
+                });
+
+                const selectModelo = document.getElementById("select-modelo");
+                selectModelo.innerHTML = '<option value="">-- Seleccione Modelo --</option>';
+                modelos.forEach(m => {
+                    selectModelo.innerHTML += `<option value="${m.id}">${m.codigo_modelo}${m.descripcion ? ' - ' + m.descripcion : ''}</option>`;
+                });
+            } catch (err) {
+                alert("Error al cargar datos iniciales: " + err.message);
+            }
+        }
+
+        // Construye una hoja de etiquetas QR en memoria (SVG generado en el navegador,
+        // nada se guarda en disco) y la abre en una pestaña nueva lista para imprimir.
+        function abrirVentanaImpresion(resultado) {
+            const ventana = window.open("", "_blank");
+            if (!ventana) {
+                alert("El navegador bloqueó la ventana emergente. Habilita los pop-ups para este sitio e inténtalo de nuevo.");
+                return;
+            }
+
+            let etiquetasHtml = "";
+            resultado.toners.forEach(t => {
+                const qr = qrcode(0, "M");
+                qr.addData(`https://ecoinv.com/scan/${t.uuid_qr}`);
+                qr.make();
+                const svg = qr.createSvgTag({ cellSize: 4, margin: 4 });
+
+                etiquetasHtml += `
+                    <div class="etiqueta">
+                        ${svg}
+                        <div class="codigo">${t.uuid_qr.substring(0, 8)}...</div>
+                        <div class="modelo">${t.modelo_codigo}</div>
+                    </div>
+                `;
+            });
+
+            ventana.document.write(`
+                <!DOCTYPE html>
+                <html lang="es">
+                <head>
+                    <meta charset="UTF-8">
+                    <title>Etiquetas QR - ${resultado.empresa}</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; margin: 24px; color: #222; }
+                        h2 { margin-bottom: 4px; }
+                        .subtitulo { color: #666; margin-bottom: 20px; font-size: 14px; }
+                        .grid { display: flex; flex-wrap: wrap; gap: 16px; }
+                        .etiqueta {
+                            width: 150px;
+                            border: 1px solid #ccc;
+                            border-radius: 6px;
+                            padding: 10px;
+                            text-align: center;
+                            page-break-inside: avoid;
+                        }
+                        .etiqueta svg { width: 100%; height: auto; }
+                        .codigo { font-family: monospace; font-size: 12px; margin-top: 6px; }
+                        .modelo { font-size: 11px; color: #555; }
+                        .barra-acciones { margin-bottom: 20px; }
+                        .barra-acciones button {
+                            background: #198754; color: #fff; border: none;
+                            padding: 8px 18px; border-radius: 6px; font-size: 14px; cursor: pointer;
+                        }
+                        @media print {
+                            .barra-acciones { display: none; }
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="barra-acciones">
+                        <button onclick="window.print()">Imprimir ahora</button>
+                    </div>
+                    <h2>Ecoinv &ndash; Etiquetas QR</h2>
+                    <div class="subtitulo">Cliente: ${resultado.empresa} &middot; Modelo: ${resultado.modelo} &middot; Cantidad: ${resultado.cantidad}</div>
+                    <div class="grid">
+                        ${etiquetasHtml}
+                    </div>
+                </body>
+                </html>
+            `);
+            ventana.document.close();
+            ventana.focus();
+            // Pequeña espera para asegurar que el navegador terminó de pintar el SVG antes de imprimir
+            setTimeout(() => ventana.print(), 350);
+        }
+
+        document.getElementById("form-generar-qr").addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            const empresa_id = document.getElementById("select-empresa").value;
+            const modelo_id = document.getElementById("select-modelo").value;
+            const cantidad = parseInt(document.getElementById("cantidad").value, 10);
+
+            if (!empresa_id || !modelo_id) {
+                alert("Selecciona una empresa y un modelo de tóner.");
+                return;
+            }
+
+            const nombreEmpresa = document.getElementById("select-empresa").selectedOptions[0].text;
+            const nombreModelo = document.getElementById("select-modelo").selectedOptions[0].text;
+
+            const confirmado = confirm(
+                `¿Confirmas la generación del lote?\n\n` +
+                `Cliente: ${nombreEmpresa}\n` +
+                `Modelo: ${nombreModelo}\n` +
+                `Cantidad: ${cantidad} unidad(es)\n\n` +
+                `Se crearán ${cantidad} tóners nuevos en el inventario de este cliente y se abrirá una pestaña con las etiquetas listas para imprimir.`
+            );
+            if (!confirmado) return;
+
+            const boton = e.target.querySelector("button[type=submit]");
+            const textoOriginal = boton.textContent;
+            boton.disabled = true;
+            boton.textContent = "Generando...";
+
+            try {
+                const resultado = await api.generarLoteQR({
+                    empresa_id: parseInt(empresa_id, 10),
+                    modelo_id: parseInt(modelo_id, 10),
+                    cantidad
+                });
+
+                abrirVentanaImpresion(resultado);
+            } catch (err) {
+                alert("Error al generar el lote: " + err.message);
+            } finally {
+                boton.disabled = false;
+                boton.textContent = textoOriginal;
+            }
+        });
+
+        initForm();
+    </script>
+</body>
+</html>

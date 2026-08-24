@@ -1,0 +1,47 @@
+:root {
+    --ecoinv-primary: #10d130;
+    --ecoinv-dark: #212529;
+    --ecoinv-bg: #f8f9fa;
+}
+
+body {
+    background-color: var(--ecoinv-bg);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.navbar-brand {
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+.card-stat {
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    transition: transform 0.2s ease-in-out;
+}
+
+.card-stat:hover {
+    transform: translateY(-3px);
+}
+
+#reader {
+    width: 100%;
+    max-width: 450px;
+    margin: 0 auto;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+#reader video {
+    object-fit: cover;
+}
+
+.badge-status {
+    font-size: 0.85rem;
+    padding: 0.4em 0.8em;
+}

@@ -63,3 +63,7 @@ CREATE TABLE incidencias (
     FOREIGN KEY (toner_id) REFERENCES toners(id) ON DELETE CASCADE,
     FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
+USE ecoinv_db;
+SELECT id, email, rol, password_hash FROM usuarios;

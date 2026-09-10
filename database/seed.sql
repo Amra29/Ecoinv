@@ -27,3 +27,20 @@ INSERT INTO toners (id, empresa_id, modelo_id, uuid_qr, estado) VALUES
 -- 5. Insertar una Incidencia de Prueba
 INSERT INTO incidencias (toner_id, usuario_id, tipo_falla, descripcion) VALUES
 (3, 2, 'Mancha Impresiones', 'El tóner deja franjas negras verticales en el costado derecho de la hoja.');
+
+USE ecoinv_db;
+SELECT id, email, rol, password_hash FROM usuarios;
+
+USE ecoinv_db;
+ 
+UPDATE usuarios
+SET password_hash = '$2b$12$bTCxTRctc488yH9NLJPM7.BCgleOuHruksqHqLXRjhdJdRP5hirBm'
+WHERE email = 'admin@ecoinv.com';
+ 
+UPDATE usuarios
+SET password_hash = '$2b$12$lw4gWImbMtDkyZ8UW02DxO6orZMV2NCeSkAK9dKVKwyq/6Ko2U4oW'
+WHERE email = 'cliente@alfa.com';
+ 
+-- Verifica que se actualizaron correctamente:
+SELECT id, email, password_hash, rol FROM usuarios;
+ 

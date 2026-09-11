@@ -13,10 +13,17 @@ app = FastAPI(
     description="API Backend para la plataforma de gestión de tóners multi-tenant Ecoinv"
 )
 
-# Configuración de CORS para permitir conexiones desde el Frontend
+# Configuración de CORS: solo se permite el dominio real del frontend en producción,
+# más localhost para que sigas pudiendo probar en tu máquina.
+origenes_permitidos = [
+    "https://strong-bublanina-be1f91.netlify.app",
+    "http://127.0.0.1:5500",
+    "http://localhost:5500",
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], # Reemplazar con dominio específico en producción
+    allow_origins=origenes_permitidos,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

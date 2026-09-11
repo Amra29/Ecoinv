@@ -13,10 +13,12 @@ app = FastAPI(
     description="API Backend para la plataforma de gestión de tóners multi-tenant Ecoinv"
 )
 
-# Configuración de CORS: solo se permite el dominio real del frontend en producción,
-# más localhost para que sigas pudiendo probar en tu máquina.
+# Configuración de CORS: dominios del frontend permitidos + localhost para pruebas.
+# IMPORTANTE: si vuelves a arrastrar la carpeta a Netlify Drop y te da OTRO dominio
+# nuevo, agrégalo aquí también (ver sección "Recomendación" más abajo).
 origenes_permitidos = [
     "https://strong-bublanina-be1f91.netlify.app",
+    "https://clever-salmiakki-85fc3a.netlify.app",
     "http://127.0.0.1:5500",
     "http://localhost:5500",
 ]

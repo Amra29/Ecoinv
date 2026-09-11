@@ -1,5 +1,4 @@
-const API_BASE_URL = "http://127.0.0.1:8000/api";
-
+const API_BASE_URL = "https://ecoinv-3.onrender.com/api";
 const api = {
     // Helper central para peticiones HTTP
     async request(endpoint, options = {}) {
